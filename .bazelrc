@@ -1,1 +1,15 @@
+# abseil-cpp requires C++17.
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# __is_trivially_relocatable was deprecated in Clang 21; older absl uses it.
+build --cxxopt=-Wno-deprecated-builtins
+build --host_cxxopt=-Wno-deprecated-builtins
+
+# zutil.h defines fdopen=NULL under TARGET_OS_MAC for old CodeWarrior toolchain,
+# breaking macOS system header declarations. Predefine fdopen as itself so the
+# #ifndef fdopen guard is false and the bad macro is never set.
+build --per_file_copt=external/zlib/.*@-Dfdopen=fdopen
+build --host_per_file_copt=external/zlib/.*@-Dfdopen=fdopen
+
 test --test_output=errors

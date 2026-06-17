@@ -1,0 +1,172 @@
+// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
+
+package dev.tayvs.grpc.prometheus;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Holds information about which metrics should be kept track of during rpc calls. Can be used to
+ * turn on more elaborate and expensive metrics, such as latency histograms.
+ */
+public class Configuration {
+    private static final double[] DEFAULT_LATENCY_BUCKETS =
+            new double[]{.001, .005, .01, .05, 0.075, .1, .25, .5, 1, 2, 5, 10};
+
+    private final boolean isIncludeLatencyHistograms;
+    //  private final CollectorRegistry collectorRegistry;
+//    private final REGISTRY collectorRegistry;
+    private final double[] latencyBuckets;
+    private final List<String> labelHeaders;
+    private final boolean isAddCodeLabelToHistograms;
+
+    /**
+     * Returns a {@link Configuration} for recording all cheap metrics about the rpcs.
+     */
+    public static Configuration cheapMetricsOnly() {
+        return new Configuration(
+                false /* isIncludeLatencyHistograms */,
+//                CollectorRegistry.defaultRegistry,
+                DEFAULT_LATENCY_BUCKETS,
+                new ArrayList<>(),
+                false /* isAddCodeLabelToHistograms */);
+    }
+
+    /**
+     * Returns a {@link Configuration} for recording all metrics about the rpcs. This includes metrics
+     * which might produce a lot of data, such as latency histograms.
+     */
+    public static Configuration allMetrics() {
+        return new Configuration(
+                true /* isIncludeLatencyHistograms */,
+//                CollectorRegistry.defaultRegistry,
+                DEFAULT_LATENCY_BUCKETS,
+                new ArrayList<>(),
+                false);
+    }
+
+//    /**
+//     * Returns a copy {@link Configuration} with the difference that Prometheus metrics are recorded
+//     * using the supplied {@link CollectorRegistry}.
+//     */
+//    // TODO: decouple it from specific prometheus library version
+//    public <NEW_REGISTRY> Configuration<NEW_REGISTRY> withCollectorRegistry(NEW_REGISTRY collectorRegistry) {
+//        return new Configuration<NEW_REGISTRY>(
+//                isIncludeLatencyHistograms,
+//                collectorRegistry,
+//                latencyBuckets,
+//                labelHeaders,
+//                isAddCodeLabelToHistograms);
+//    }
+
+    /**
+     * Returns a copy {@link Configuration} with the difference that the latency histogram values are
+     * recorded with the specified set of buckets.
+     */
+    public Configuration withLatencyBuckets(double[] buckets) {
+        return new Configuration(
+                isIncludeLatencyHistograms,
+//                collectorRegistry,
+                buckets,
+                labelHeaders,
+                isAddCodeLabelToHistograms);
+    }
+
+    /**
+     * Returns a copy {@link Configuration} that recognizes the given list of header names and uses
+     * their value from each request as prometheus labels.
+     *
+     * <p>Since hyphens is a common character in header names, and since Prometheus does not allow
+     * hyphens in label names, All hyphens in the list of header names will be converted to
+     * underscores before being added as metric label names.
+     *
+     * <p>If one of the headers added here is absent in one of the requests, its metric value for that
+     * request will be an empty string.
+     *
+     * <p>Example: {@code withLabelHeaders(Arrays.asList("User-Agent"))} will make all metrics carry a
+     * label "User_Agent", with label value filled in from the value of the "User-Agent" header of
+     * each request.
+     */
+    public Configuration withLabelHeaders(List<String> headers) {
+        List<String> newHeaders = new ArrayList<>(labelHeaders);
+        newHeaders.addAll(headers);
+        return new Configuration(
+                isIncludeLatencyHistograms,
+//                collectorRegistry,
+                latencyBuckets,
+                newHeaders,
+                isAddCodeLabelToHistograms);
+    }
+
+    /**
+     * Returns a copy {@link Configuration} with the difference that status code label will be added
+     * to latency histogram. If latency histogram itself is disabled, this takes no effect. Warning:
+     * this will increase the number of histograms by a factor of actually happened codes (up to
+     * {@link io.grpc.Status.Code} values count), which could lead to additional local memory usage
+     * and load on prometheus (storage and memory usage, query-time complexity)
+     */
+    public Configuration withCodeLabelInLatencyHistogram() {
+        return new Configuration(
+                isIncludeLatencyHistograms,
+//                collectorRegistry,
+                latencyBuckets,
+                labelHeaders,
+                true /* isAddCodeLabelToHistograms */);
+    }
+
+    /**
+     * Returns whether or not latency histograms for calls should be included.
+     */
+    public boolean isIncludeLatencyHistograms() {
+        return isIncludeLatencyHistograms;
+    }
+
+//    /**
+//     * Returns the {@link REGISTRY} used to record stats.
+//     */
+//    public REGISTRY getCollectorRegistry() {
+//        return collectorRegistry;
+//    }
+
+    /**
+     * Returns the histogram buckets to use for latency metrics.
+     */
+    public double[] getLatencyBuckets() {
+        return latencyBuckets;
+    }
+
+    /**
+     * Returns the configured list of headers to be used as labels.
+     */
+    public List<String> getLabelHeaders() {
+        return labelHeaders;
+    }
+
+    /**
+     * Returns whether or not status code label should be added to latency histogram.
+     */
+    public boolean isAddCodeLabelToHistograms() {
+        return isAddCodeLabelToHistograms;
+    }
+
+    /**
+     * Returns the sanitized version of the label headers, after turning all hyphens to underscores.
+     */
+    public List<String> getSanitizedLabelHeaders() {
+        return labelHeaders.stream().map(h -> h.replaceAll("-", "_")).collect(Collectors.toList());
+    }
+
+    private Configuration(
+            boolean isIncludeLatencyHistograms,
+//            REGISTRY collectorRegistry,
+            double[] latencyBuckets,
+            List<String> labelHeaders,
+            boolean isAddCodeLabelToHistograms) {
+        this.isIncludeLatencyHistograms = isIncludeLatencyHistograms;
+//        this.collectorRegistry = collectorRegistry;
+        this.latencyBuckets = latencyBuckets;
+        this.labelHeaders = labelHeaders;
+        this.isAddCodeLabelToHistograms = isAddCodeLabelToHistograms;
+    }
+}

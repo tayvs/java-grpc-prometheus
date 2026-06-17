@@ -1,6 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-GRPC_JAVA_VERSION = "1.51.0"
+GRPC_JAVA_VERSION = "1.81.0"
 
 http_archive(
     name = "io_grpc_grpc_java",
@@ -8,10 +8,9 @@ http_archive(
     url = "https://github.com/grpc/grpc-java/archive/v%s.zip" % GRPC_JAVA_VERSION,
 )
 
-load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
-load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS", "grpc_java_repositories")
 
-RULES_JVM_EXTERNAL_TAG = "4.5"
+RULES_JVM_EXTERNAL_TAG = "6.6"
 
 http_archive(
     name = "rules_jvm_external",
@@ -29,43 +28,52 @@ rules_jvm_external_setup()
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
+SIMPLE_CLIENT_AFTER_10 = [
+    "io.prometheus:simpleclient:0.16.0",
+]
+
+SIMPLE_CLIENT_BEFORE_10 = [
+    "io.prometheus:simpleclient:0.9.0",
+]
+
 MAVEN_ARTIFACTS = [
     "com.google.cloud:google-cloud-core:1.93.10",
     "com.google.cloud:google-cloud-storage:1.113.4",
-    "com.google.truth:truth:1.0.1",
+    "com.google.truth:truth:1.4.2",
     "io.grpc:grpc-api:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
-    "io.prometheus:simpleclient:0.11.0",
-    "junit:junit:4.10",
+    "junit:junit:4.13.2",
     "org.mockito:mockito-all:1.10.19",
 ]
 
 maven_install(
-    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS,
-    generate_compat_repositories = True,
-    maven_install_json = "//:maven_install.json",
+    name = "maven",
+    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + SIMPLE_CLIENT_AFTER_10,
     override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
     repositories = [
-        "https://jcenter.bintray.com/",
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
 )
 
-load("@maven//:defs.bzl", "pinned_maven_install")
+maven_install(
+    name = "maven_2",
+    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + SIMPLE_CLIENT_BEFORE_10,
+    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
 
-pinned_maven_install()
-
-load("@maven//:compat.bzl", "compat_repositories")
-
-compat_repositories()
-
-load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
-
-# Run grpc_java_repositories after compat_repositories to ensure the
+# Run grpc_java_repositories after maven_install to ensure the
 # maven_install-selected dependencies are used.
 grpc_java_repositories()
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
