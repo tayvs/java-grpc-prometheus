@@ -8,7 +8,7 @@ java_library(
     exports = [
         "@io_grpc_grpc_java//core:inprocess",
         "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
-        "@maven//:org_mockito_mockito_all",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_mockito_mockito_core",
     ],
 )

@@ -37,13 +37,13 @@ SIMPLE_CLIENT_BEFORE_10 = [
 ]
 
 MAVEN_ARTIFACTS = [
-    "com.google.cloud:google-cloud-core:1.93.10",
-    "com.google.cloud:google-cloud-storage:1.113.4",
-    "com.google.truth:truth:1.4.2",
+    "com.google.cloud:google-cloud-core:2.71.0",
+    "com.google.cloud:google-cloud-storage:2.69.0",
+    "com.google.truth:truth:1.4.5",
     "io.grpc:grpc-api:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
-    "junit:junit:4.13.2",
-    "org.mockito:mockito-all:1.10.19",
+    "org.junit.jupiter:junit-jupiter-api:6.1.0",
+    "org.mockito:mockito-core:5.23.0",
 ]
 
 maven_install(

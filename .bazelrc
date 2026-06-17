@@ -1,3 +1,8 @@
+# This project uses WORKSPACE-based deps; disable Bzlmod to prevent the
+# Bzlmod-resolved protobuf~ 3.21.7 from shadowing com_google_protobuf 33.4
+# and causing a clearExtension type-erasure name clash in DescriptorProtos.java.
+common --enable_bzlmod=false
+
 # abseil-cpp requires C++17.
 build --cxxopt=-std=c++17
 build --host_cxxopt=-std=c++17
@@ -13,3 +18,7 @@ build --per_file_copt=external/zlib/.*@-Dfdopen=fdopen
 build --host_per_file_copt=external/zlib/.*@-Dfdopen=fdopen
 
 test --test_output=errors
+# Bazel 7's java_stub_template hardcodes -Djava.security.manager=allow, which
+# Java 21+ rejects. Pass disallow via --jvm_flag= wrapper arg so it lands in
+# JVM_FLAGS_CMDLINE (after the hardcoded flag), and last -D wins.
+test --test_arg=--jvm_flag=-Djava.security.manager=disallow
