@@ -28,18 +28,22 @@ rules_jvm_external_setup()
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
-SIMPLE_CLIENT_AFTER_10 = [
+SIMPLE_CLIENT_0_16 = [
     "io.prometheus:simpleclient:0.16.0",
 ]
 
-SIMPLE_CLIENT_BEFORE_10 = [
+SIMPLE_CLIENT_0_9 = [
     "io.prometheus:simpleclient:0.9.0",
 ]
 
+PROMETHEUS_CLIENT = [
+    "io.prometheus:prometheus-metrics-core:1.8.0",
+]
+
 MAVEN_ARTIFACTS = [
-    "com.google.cloud:google-cloud-core:2.71.0",
-    "com.google.cloud:google-cloud-storage:2.69.0",
-    "com.google.truth:truth:1.4.5",
+    #     "com.google.cloud:google-cloud-core:2.71.0",
+    #     "com.google.cloud:google-cloud-storage:2.69.0",
+    #     "com.google.truth:truth:1.4.5",
     "io.grpc:grpc-api:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
     "org.junit.jupiter:junit-jupiter-api:6.1.0",
@@ -48,7 +52,7 @@ MAVEN_ARTIFACTS = [
 
 maven_install(
     name = "maven",
-    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + SIMPLE_CLIENT_AFTER_10,
+    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + SIMPLE_CLIENT_0_16,
     override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
     repositories = [
         "https://maven.google.com",
@@ -58,8 +62,16 @@ maven_install(
 
 maven_install(
     name = "maven_2",
-    artifacts = MAVEN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + SIMPLE_CLIENT_BEFORE_10,
-    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
+    artifacts = SIMPLE_CLIENT_0_9,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+
+maven_install(
+    name = "maven_3",
+    artifacts = PROMETHEUS_CLIENT,
     repositories = [
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
