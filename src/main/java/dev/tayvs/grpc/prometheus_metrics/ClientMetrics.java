@@ -32,39 +32,29 @@ class ClientMetrics implements ClientMetricsI {
 
     private static final Counter.Builder rpcStartedBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("client")
-                    .name("started")
+                    .name("grpc_client_started")
                     .help("Total number of RPCs started on the client.");
 
     private static final Counter.Builder rpcCompletedBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("client")
-                    .name("completed")
+                    .name("grpc_client_completed")
                     // TODO: The "code" label should be deprecated in a future major release. (See also below
                     // in recordClientHandled().)
                     .help("Total number of RPCs completed on the client, regardless of success or failure.");
 
     private static final Histogram.Builder completedLatencySecondsBuilder =
             Histogram.builder()
-//                    .namespace("grpc")
-//                    .subsystem("client")
-                    .name("completed_latency_seconds")
+                    .name("grpc_client_completed_latency_seconds")
                     .help("Histogram of rpc response latency (in seconds) for completed rpcs.");
 
     private static final Counter.Builder streamMessagesReceivedBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("client")
-                    .name("msg_received")
+                    .name("grpc_client_msg_received")
                     .help("Total number of stream messages received from the server.");
 
     private static final Counter.Builder streamMessagesSentBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("client")
-                    .name("msg_sent")
+                    .name("grpc_client_msg_sent")
                     .help("Total number of stream messages sent by the client.");
 
     private final List<Key<String>> labelHeaderKeys;

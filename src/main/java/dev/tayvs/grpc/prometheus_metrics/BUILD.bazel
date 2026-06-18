@@ -8,7 +8,7 @@ java_library(
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//third_party/grpc",
-        "@maven_3//:io_prometheus_prometheus_metrics_core",
-        "@maven_3//:io_prometheus_prometheus_metrics_model",
+        "@maven_1_0//:io_prometheus_prometheus_metrics_core",
+        "@maven_1_0//:io_prometheus_prometheus_metrics_model",
     ],
 )

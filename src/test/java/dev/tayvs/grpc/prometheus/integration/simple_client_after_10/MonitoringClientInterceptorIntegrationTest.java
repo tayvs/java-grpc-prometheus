@@ -30,9 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Integration tests for the client-side monitoring pipeline using simple_client_after_10
- * (simpleclient 0.9.0). simpleclient 0.9.0 does not emit _created timestamps and does not
- * append _total to counter sample names, so each counter family has one sample per label combo.
+ * Integration tests for the client-side monitoring pipeline.
+ * Uses the simple_client_after_10 (simpleclient 0.9.0) implementation.
  */
 public class MonitoringClientInterceptorIntegrationTest {
     private static final String grpcServerName = "grpc-server";
@@ -63,7 +62,7 @@ public class MonitoringClientInterceptorIntegrationTest {
     public void unaryRpcMetrics() throws Throwable {
         createClientStub(CHEAP_METRICS).sayHello(REQUEST, responseRecorder);
         assertThat(
-                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started")
+                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started_total")
                         .value)
                 .isWithin(0)
                 .of(1);
@@ -74,16 +73,17 @@ public class MonitoringClientInterceptorIntegrationTest {
         responseRecorder.awaitCompletion();
 
         Collector.MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_client_completed");
-        assertThat(handled.samples).hasSize(1);
+        assertThat(handled.samples).hasSize(2);
         Collector.MetricFamilySamples.Sample totalSample =
-                getSample(handled, "grpc_client_completed");
+                getSample(handled, "grpc_client_completed_total");
         assertThat(totalSample.labelValues)
                 .containsExactly(
                         "UNARY",
                         HelloServiceImpl.SERVICE_NAME,
                         HelloServiceImpl.UNARY_METHOD_NAME,
                         "OK",
-                        "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+                        "OK"); // TODO: These are the "code" and "grpc_code" labels which are currently
+        // duplicated. "code" should be deprecated in a future release.
         assertThat(totalSample.value).isWithin(0).of(1);
     }
 
@@ -95,7 +95,7 @@ public class MonitoringClientInterceptorIntegrationTest {
         requestStream.onNext(REQUEST);
 
         assertThat(
-                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started")
+                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started_total")
                         .value)
                 .isWithin(0)
                 .of(1);
@@ -103,7 +103,7 @@ public class MonitoringClientInterceptorIntegrationTest {
         // The "sent" metric should get incremented even if the rpc hasn't terminated.
         assertThat(
                 getSample(
-                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent")
+                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent_total")
                         .value)
                 .isWithin(0)
                 .of(2);
@@ -117,22 +117,23 @@ public class MonitoringClientInterceptorIntegrationTest {
 
         assertThat(
                 getSample(
-                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent")
+                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent_total")
                         .value)
                 .isWithin(0)
                 .of(3);
 
         Collector.MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_client_completed");
-        assertThat(handled.samples).hasSize(1);
+        assertThat(handled.samples).hasSize(2);
         Collector.MetricFamilySamples.Sample totalSample =
-                getSample(handled, "grpc_client_completed");
+                getSample(handled, "grpc_client_completed_total");
         assertThat(totalSample.labelValues)
                 .containsExactly(
                         "CLIENT_STREAMING",
                         HelloServiceImpl.SERVICE_NAME,
                         HelloServiceImpl.CLIENT_STREAM_METHOD_NAME,
-                        "OK",
-                        "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+                        "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+                        // duplicated. "code" should be deprecated in a future release.
+                        "OK");
         assertThat(totalSample.value).isWithin(0).of(1);
     }
 
@@ -142,7 +143,7 @@ public class MonitoringClientInterceptorIntegrationTest {
         responseRecorder.awaitCompletion();
 
         assertThat(
-                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started")
+                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started_total")
                         .value)
                 .isWithin(0)
                 .of(1);
@@ -150,7 +151,7 @@ public class MonitoringClientInterceptorIntegrationTest {
         assertThat(
                 getSample(
                         findRecordedMetricOrThrow("grpc_client_msg_received"),
-                        "grpc_client_msg_received")
+                        "grpc_client_msg_received_total")
                         .value)
                 .isWithin(0)
                 .of(1);
@@ -158,16 +159,17 @@ public class MonitoringClientInterceptorIntegrationTest {
         assertThat(findRecordedMetricOrThrow("grpc_client_msg_sent").samples).isEmpty();
 
         Collector.MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_client_completed");
-        assertThat(handled.samples).hasSize(1);
+        assertThat(handled.samples).hasSize(2);
         Collector.MetricFamilySamples.Sample totalSample =
-                getSample(handled, "grpc_client_completed");
+                getSample(handled, "grpc_client_completed_total");
         assertThat(totalSample.labelValues)
                 .containsExactly(
                         "SERVER_STREAMING",
                         HelloServiceImpl.SERVICE_NAME,
                         HelloServiceImpl.SERVER_STREAM_METHOD_NAME,
-                        "OK",
-                        "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+                        "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+                        // duplicated. "code" should be deprecated in a future release.
+                        "OK");
         assertThat(totalSample.value).isWithin(0).of(1);
     }
 
@@ -182,7 +184,7 @@ public class MonitoringClientInterceptorIntegrationTest {
         responseRecorder.awaitCompletion();
 
         assertThat(
-                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started")
+                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started_total")
                         .value)
                 .isWithin(0)
                 .of(1);
@@ -190,29 +192,30 @@ public class MonitoringClientInterceptorIntegrationTest {
         assertThat(
                 getSample(
                         findRecordedMetricOrThrow("grpc_client_msg_received"),
-                        "grpc_client_msg_received")
+                        "grpc_client_msg_received_total")
                         .value)
                 .isWithin(0)
                 .of(2);
 
         assertThat(
                 getSample(
-                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent")
+                        findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent_total")
                         .value)
                 .isWithin(0)
                 .of(2);
 
         Collector.MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_client_completed");
-        assertThat(handled.samples).hasSize(1);
+        assertThat(handled.samples).hasSize(2);
         Collector.MetricFamilySamples.Sample totalSample =
-                getSample(handled, "grpc_client_completed");
+                getSample(handled, "grpc_client_completed_total");
         assertThat(totalSample.labelValues)
                 .containsExactly(
                         "BIDI_STREAMING",
                         HelloServiceImpl.SERVICE_NAME,
                         HelloServiceImpl.BIDI_STREAM_METHOD_NAME,
-                        "OK",
-                        "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+                        "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+                        // duplicated. "code" should be deprecated in a future release.
+                        "OK");
         assertThat(totalSample.value).isWithin(0).of(1);
     }
 
@@ -232,12 +235,14 @@ public class MonitoringClientInterceptorIntegrationTest {
 
         responseRecorder.awaitCompletion();
 
-        assertThat(findRecordedMetricOrThrow("grpc_client_completed").samples).hasSize(1);
+        assertThat(findRecordedMetricOrThrow("grpc_client_completed").samples).hasSize(2);
         assertThat(findRecordedMetricNamesOrThrow("grpc_client_completed"))
-                .contains("grpc_client_completed");
+                .contains("grpc_client_completed_total");
+        assertThat(findRecordedMetricNamesOrThrow("grpc_client_completed"))
+                .contains("grpc_client_completed_created");
         Collector.MetricFamilySamples.Sample sample =
                 getSample(
-                        findRecordedMetricOrThrow("grpc_client_completed"), "grpc_client_completed");
+                        findRecordedMetricOrThrow("grpc_client_completed"), "grpc_client_completed_total");
         assertThat(sample.labelNames)
                 .containsExactly(
                         "grpc_type",
@@ -252,16 +257,19 @@ public class MonitoringClientInterceptorIntegrationTest {
                         "BIDI_STREAMING",
                         HelloServiceImpl.SERVICE_NAME,
                         HelloServiceImpl.BIDI_STREAM_METHOD_NAME,
-                        "OK",
+                        "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+                        // duplicated. "code" should be deprecated in a future release.
                         "OK",
                         "value1",
                         "value2");
 
-        assertThat(findRecordedMetricOrThrow("grpc_client_started").samples).hasSize(1);
+        assertThat(findRecordedMetricOrThrow("grpc_client_started").samples).hasSize(2);
         assertThat(findRecordedMetricNamesOrThrow("grpc_client_started"))
-                .contains("grpc_client_started");
+                .contains("grpc_client_started_total");
+        assertThat(findRecordedMetricNamesOrThrow("grpc_client_started"))
+                .contains("grpc_client_started_created");
         sample =
-                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started");
+                getSample(findRecordedMetricOrThrow("grpc_client_started"), "grpc_client_started_total");
         assertThat(sample.labelNames)
                 .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
         assertThat(sample.labelValues)
@@ -272,13 +280,15 @@ public class MonitoringClientInterceptorIntegrationTest {
                         "value1",
                         "value2");
 
-        assertThat(findRecordedMetricOrThrow("grpc_client_msg_received").samples).hasSize(1);
+        assertThat(findRecordedMetricOrThrow("grpc_client_msg_received").samples).hasSize(2);
         assertThat(findRecordedMetricNamesOrThrow("grpc_client_msg_received"))
-                .contains("grpc_client_msg_received");
+                .contains("grpc_client_msg_received_total");
+        assertThat(findRecordedMetricNamesOrThrow("grpc_client_msg_received"))
+                .contains("grpc_client_msg_received_created");
         sample =
                 getSample(
                         findRecordedMetricOrThrow("grpc_client_msg_received"),
-                        "grpc_client_msg_received");
+                        "grpc_client_msg_received_total");
         assertThat(sample.labelNames)
                 .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
         assertThat(sample.labelValues)
@@ -289,11 +299,13 @@ public class MonitoringClientInterceptorIntegrationTest {
                         "value1",
                         "value2");
 
-        assertThat(findRecordedMetricOrThrow("grpc_client_msg_sent").samples).hasSize(1);
+        assertThat(findRecordedMetricOrThrow("grpc_client_msg_sent").samples).hasSize(2);
         assertThat(findRecordedMetricNamesOrThrow("grpc_client_msg_sent"))
-                .contains("grpc_client_msg_sent");
+                .contains("grpc_client_msg_sent_total");
+        assertThat(findRecordedMetricNamesOrThrow("grpc_client_msg_sent"))
+                .contains("grpc_client_msg_sent_created");
         sample =
-                getSample(findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent");
+                getSample(findRecordedMetricOrThrow("grpc_client_msg_sent"), "grpc_client_msg_sent_total");
         assertThat(sample.labelNames)
                 .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
         assertThat(sample.labelValues)
@@ -334,7 +346,7 @@ public class MonitoringClientInterceptorIntegrationTest {
                 .sayHello(HelloProto.HelloRequest.getDefaultInstance(), responseRecorder);
         responseRecorder.awaitCompletion();
 
-        long expectedNum = buckets.length + 1; // Our buckets plus the +Inf bucket.
+        long expectedNum = buckets.length + 1; // Our two buckets and the Inf buckets.
         assertThat(
                 countSamples(
                         "grpc_client_completed_latency_seconds",

@@ -37,41 +37,31 @@ class ServerMetrics implements ServerMetricsI {
 
     private static final Counter.Builder serverStartedBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("server")
-                    .name("started")
+                    .name("grpc_server_started")
                     .help("Total number of RPCs started on the server.");
 
     private static final Counter.Builder serverHandledBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("server")
-                    .name("handled")
+                    .name("grpc_server_handled")
                     // TODO: The "code" label should be deprecated in a future major release. (See also below
                     // in recordServerHandled().)
                     .help("Total number of RPCs completed on the server, regardless of success or failure.");
 
     private static final Histogram.Builder serverHandledLatencySecondsBuilder =
             Histogram.builder()
-//                    .namespace("grpc")
-//                    .subsystem("server")
-                    .name("handled_latency_seconds")
+                    .name("grpc_server_handled_latency_seconds")
                     .help(
                             "Histogram of response latency (seconds) of gRPC that had been application-level "
                                     + "handled by the server.");
 
     private static final Counter.Builder serverStreamMessagesReceivedBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("server")
-                    .name("msg_received")
+                    .name("grpc_server_msg_received")
                     .help("Total number of stream messages received from the client.");
 
     private static final Counter.Builder serverStreamMessagesSentBuilder =
             Counter.builder()
-//                    .namespace("grpc")
-//                    .subsystem("server")
-                    .name("msg_sent")
+                    .name("grpc_server_msg_sent")
                     .help("Total number of stream messages sent by the server.");
 
     private final List<Key<String>> labelHeaderKeys;

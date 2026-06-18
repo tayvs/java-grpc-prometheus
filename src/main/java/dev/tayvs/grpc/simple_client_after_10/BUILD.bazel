@@ -8,6 +8,6 @@ java_library(
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//third_party/grpc",
-        "@maven_2//:io_prometheus_simpleclient",
+        "@maven_0_16//:io_prometheus_simpleclient",
     ],
 )

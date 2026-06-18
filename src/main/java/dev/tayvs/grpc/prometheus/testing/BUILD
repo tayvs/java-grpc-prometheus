@@ -14,29 +14,29 @@ java_library(
     ],
 )
 
-# RegistryHelper compiled against simpleclient 0.16.0 (used by simple_client_before_9).
+# RegistryHelper compiled against simpleclient 0.9.0 (used by simple_client_before_9).
 java_library(
     name = "testing_simple_client_before_9",
     testonly = 1,
     srcs = ["RegistryHelper.java"],
-    deps = [
-        "@maven//:io_prometheus_simpleclient",
-    ],
     exports = [
-        "@maven//:io_prometheus_simpleclient",
+        "@maven_0_9//:io_prometheus_simpleclient",
+    ],
+    deps = [
+        "@maven_0_9//:io_prometheus_simpleclient",
     ],
 )
 
-# RegistryHelper compiled against simpleclient 0.9.0 (used by simple_client_after_10).
+# RegistryHelper compiled against simpleclient 0.16.0 (used by simple_client_after_10).
 java_library(
     name = "testing_simple_client_after_10",
     testonly = 1,
     srcs = ["RegistryHelper.java"],
-    deps = [
-        "@maven_2//:io_prometheus_simpleclient",
-    ],
     exports = [
-        "@maven_2//:io_prometheus_simpleclient",
+        "@maven_0_16//:io_prometheus_simpleclient",
+    ],
+    deps = [
+        "@maven_0_16//:io_prometheus_simpleclient",
     ],
 )
 
@@ -46,7 +46,7 @@ java_library(
     testonly = 1,
     srcs = ["PrometheusRegistryHelper.java"],
     deps = [
-        "@maven_3//:io_prometheus_prometheus_metrics_core",
-        "@maven_3//:io_prometheus_prometheus_metrics_model",
+        "@maven_1_0//:io_prometheus_prometheus_metrics_core",
+        "@maven_1_0//:io_prometheus_prometheus_metrics_model",
     ],
 )

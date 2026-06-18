@@ -15,8 +15,6 @@ public class Configuration {
             new double[]{.001, .005, .01, .05, 0.075, .1, .25, .5, 1, 2, 5, 10};
 
     private final boolean isIncludeLatencyHistograms;
-    //  private final CollectorRegistry collectorRegistry;
-//    private final REGISTRY collectorRegistry;
     private final double[] latencyBuckets;
     private final List<String> labelHeaders;
     private final boolean isAddCodeLabelToHistograms;
@@ -24,10 +22,12 @@ public class Configuration {
     /**
      * Returns a {@link Configuration} for recording all cheap metrics about the rpcs.
      */
+    // TODO: make similar method for Providers
+    // TODO: add a way to override internal configuration in Provider
+    // TODO: Return an ancestor of Configuration? To be able to add more prometheus-version-specific configurations
     public static Configuration cheapMetricsOnly() {
         return new Configuration(
                 false /* isIncludeLatencyHistograms */,
-//                CollectorRegistry.defaultRegistry,
                 DEFAULT_LATENCY_BUCKETS,
                 new ArrayList<>(),
                 false /* isAddCodeLabelToHistograms */);
@@ -40,25 +40,10 @@ public class Configuration {
     public static Configuration allMetrics() {
         return new Configuration(
                 true /* isIncludeLatencyHistograms */,
-//                CollectorRegistry.defaultRegistry,
                 DEFAULT_LATENCY_BUCKETS,
                 new ArrayList<>(),
                 false);
     }
-
-//    /**
-//     * Returns a copy {@link Configuration} with the difference that Prometheus metrics are recorded
-//     * using the supplied {@link CollectorRegistry}.
-//     */
-//    // TODO: decouple it from specific prometheus library version
-//    public <NEW_REGISTRY> Configuration<NEW_REGISTRY> withCollectorRegistry(NEW_REGISTRY collectorRegistry) {
-//        return new Configuration<NEW_REGISTRY>(
-//                isIncludeLatencyHistograms,
-//                collectorRegistry,
-//                latencyBuckets,
-//                labelHeaders,
-//                isAddCodeLabelToHistograms);
-//    }
 
     /**
      * Returns a copy {@link Configuration} with the difference that the latency histogram values are
@@ -67,7 +52,6 @@ public class Configuration {
     public Configuration withLatencyBuckets(double[] buckets) {
         return new Configuration(
                 isIncludeLatencyHistograms,
-//                collectorRegistry,
                 buckets,
                 labelHeaders,
                 isAddCodeLabelToHistograms);
@@ -93,7 +77,6 @@ public class Configuration {
         newHeaders.addAll(headers);
         return new Configuration(
                 isIncludeLatencyHistograms,
-//                collectorRegistry,
                 latencyBuckets,
                 newHeaders,
                 isAddCodeLabelToHistograms);
@@ -109,7 +92,6 @@ public class Configuration {
     public Configuration withCodeLabelInLatencyHistogram() {
         return new Configuration(
                 isIncludeLatencyHistograms,
-//                collectorRegistry,
                 latencyBuckets,
                 labelHeaders,
                 true /* isAddCodeLabelToHistograms */);
@@ -121,13 +103,6 @@ public class Configuration {
     public boolean isIncludeLatencyHistograms() {
         return isIncludeLatencyHistograms;
     }
-
-//    /**
-//     * Returns the {@link REGISTRY} used to record stats.
-//     */
-//    public REGISTRY getCollectorRegistry() {
-//        return collectorRegistry;
-//    }
 
     /**
      * Returns the histogram buckets to use for latency metrics.
