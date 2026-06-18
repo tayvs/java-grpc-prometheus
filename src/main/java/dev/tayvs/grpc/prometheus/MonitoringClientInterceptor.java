@@ -19,8 +19,7 @@ public class MonitoringClientInterceptor implements ClientInterceptor {
     return new MonitoringClientInterceptor(Clock.systemDefaultZone(), provider);
   }
 
-  private MonitoringClientInterceptor(
-      Clock clock, ProviderI<?> providerI) {
+  private MonitoringClientInterceptor(Clock clock, ProviderI<?> providerI) {
     this.clock = clock;
     this.configuration = providerI.getConfig();
     this.clientMetricsFactory = providerI.clientMetricsFactory();

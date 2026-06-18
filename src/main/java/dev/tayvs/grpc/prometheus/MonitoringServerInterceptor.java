@@ -16,12 +16,10 @@ public class MonitoringServerInterceptor implements ServerInterceptor {
   private final ServerMetricsI.FactoryI serverMetricsFactory;
 
   public static MonitoringServerInterceptor create(ProviderI provider) {
-    return new MonitoringServerInterceptor(
-        Clock.systemDefaultZone(), provider);
+    return new MonitoringServerInterceptor(Clock.systemDefaultZone(), provider);
   }
 
-  private MonitoringServerInterceptor(
-      Clock clock, ProviderI providerI) {
+  private MonitoringServerInterceptor(Clock clock, ProviderI providerI) {
     this.clock = clock;
     this.configuration = providerI.getConfig();
     this.serverMetricsFactory = providerI.serverMetricsFactory();

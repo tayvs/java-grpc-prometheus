@@ -6,9 +6,9 @@ java_test(
     srcs = ["MonitoringServerInterceptorIntegrationTest.java"],
     test_class = "dev.tayvs.grpc.prometheus.integration.simple_client_before_9.MonitoringServerInterceptorIntegrationTest",
     deps = [
+        "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_before_9",
-        "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/simple_client_before_9:prometheus",
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",
