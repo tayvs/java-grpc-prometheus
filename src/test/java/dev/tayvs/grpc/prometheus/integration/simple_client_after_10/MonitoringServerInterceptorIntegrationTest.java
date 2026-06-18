@@ -1,6 +1,6 @@
 // Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
 
-package dev.tayvs.grpc.prometheus.integration;
+package dev.tayvs.grpc.prometheus.integration.simple_client_after_10;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -38,8 +38,8 @@ import org.junit.Test;
 
 /**
  * Integrations tests for the simple_client_after_10 module (simpleclient 0.9.0).
- * simpleclient 0.9.0 does not emit _created timestamps, so each counter family
- * has one sample per label combination (only _total, no _created).
+ * In simpleclient 0.9.0: counters have no _total suffix and no _created samples.
+ * Each counter family has one sample per label combination.
  */
 public class MonitoringServerInterceptorIntegrationTest {
     private static final String grpcServerName = "grpc-server";

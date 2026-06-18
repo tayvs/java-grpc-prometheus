@@ -7,12 +7,12 @@ public class Provider implements ProviderI<CollectorRegistry> {
     private final Configuration config;
     private final CollectorRegistry collectorRegistry;
 
-    Provider(Configuration config) {
+    public Provider(Configuration config) {
         this.config = config;
         this.collectorRegistry = CollectorRegistry.defaultRegistry;
     }
 
-    Provider(Configuration config, CollectorRegistry collectorRegistry) {
+    public Provider(Configuration config, CollectorRegistry collectorRegistry) {
         this.config = config;
         this.collectorRegistry = collectorRegistry;
     }

@@ -1,0 +1,7 @@
+directories:
+  src
+
+targets:
+  //src/...
+
+derive_targets_from_directories: true

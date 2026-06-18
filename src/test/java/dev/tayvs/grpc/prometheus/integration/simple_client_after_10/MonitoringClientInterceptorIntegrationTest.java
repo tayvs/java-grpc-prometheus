@@ -1,4 +1,4 @@
-package dev.tayvs.grpc.prometheus.integration;
+package dev.tayvs.grpc.prometheus.integration.simple_client_after_10;
 
 import static com.google.common.truth.Truth.assertThat;
 

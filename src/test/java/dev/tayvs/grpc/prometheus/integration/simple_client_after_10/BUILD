@@ -4,7 +4,7 @@ java_test(
     name = "server_test",
     size = "small",
     srcs = ["MonitoringServerInterceptorIntegrationTest.java"],
-    test_class = "dev.tayvs.grpc.prometheus.integration.MonitoringServerInterceptorIntegrationTest",
+    test_class = "dev.tayvs.grpc.prometheus.integration.simple_client_after_10.MonitoringServerInterceptorIntegrationTest",
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_after_10",
@@ -23,7 +23,7 @@ java_test(
     name = "client_test",
     size = "small",
     srcs = ["MonitoringClientInterceptorIntegrationTest.java"],
-    test_class = "dev.tayvs.grpc.prometheus.integration.MonitoringClientInterceptorIntegrationTest",
+    test_class = "dev.tayvs.grpc.prometheus.integration.simple_client_after_10.MonitoringClientInterceptorIntegrationTest",
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
