@@ -11,6 +11,6 @@ jobs:
       - name: Lint Java style
         run: |
           VERSION=1.11.0
-          wget 'https://github.com/google/google-java-format/releases/download/v${VERSION}/google-java-format-${VERSION}-all-deps.jar'
+          wget "https://github.com/google/google-java-format/releases/download/v${VERSION}/google-java-format-${VERSION}-all-deps.jar"
           chmod +x google-java-format-${VERSION}-all-deps.jar
           java -jar google-java-format-${VERSION}-all-deps.jar --dry-run --set-exit-if-changed $(find src -type f -name '*.java')
