@@ -7,7 +7,7 @@ load("@rules_jvm_external//:defs.bzl", "java_export")
 # drop the suffix to cut a release.
 GROUP = "io.github.tayvs"
 
-VERSION = "1.0.0-SNAPSHOT"
+VERSION = "1.0.0-RC1-SNAPSHOT"
 
 # To deploy to the local maven repo:
 # > bazel run --define "maven_repo=file://$HOME/.m2/repository" //:maven_export_lib.publish
@@ -78,7 +78,6 @@ java_export(
 # classpath and breaks the build. A stub javadoc jar is emitted instead.
 java_export(
     name = "maven_export_metrics",
-    tags = ["no-javadocs"],
     deploy_env = [
         ":maven_export_lib",
         "//third_party/grpc",
@@ -87,6 +86,7 @@ java_export(
     ],
     maven_coordinates = "%s:java-grpc-prometheus-metrics:%s" % (GROUP, VERSION),
     pom_template = "//:pom_template.xml",
+    tags = ["no-javadocs"],
     runtime_deps = [
         ":maven_export_lib",
         "//src/main/java/dev/tayvs/grpc/prometheus_metrics_1:prometheus",
@@ -100,7 +100,6 @@ java_export(
 # Skips javadoc generation for the same reason as the 1.x metrics module above.
 java_export(
     name = "maven_export_metrics_legacy",
-    tags = ["no-javadocs"],
     deploy_env = [
         ":maven_export_lib",
         "//third_party/grpc",
@@ -109,6 +108,7 @@ java_export(
     ],
     maven_coordinates = "%s:java-grpc-prometheus-metrics-legacy:%s" % (GROUP, VERSION),
     pom_template = "//:pom_template.xml",
+    tags = ["no-javadocs"],
     runtime_deps = [
         ":maven_export_lib",
         "//src/main/java/dev/tayvs/grpc/prometheus_metrics_1_5:prometheus",
