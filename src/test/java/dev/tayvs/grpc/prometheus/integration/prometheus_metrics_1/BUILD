@@ -3,12 +3,14 @@ load("@rules_java//java:defs.bzl", "java_test")
 java_test(
     name = "server_test",
     size = "small",
-    srcs = ["MonitoringServerInterceptorIntegrationTest.java"],
+    srcs = [
+        "MonitoringServerInterceptorIntegrationTest.java",
+        "PrometheusRegistryHelper.java",
+    ],
     test_class = "dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1.MonitoringServerInterceptorIntegrationTest",
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
-        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_prometheus_metrics",
         "//src/main/java/dev/tayvs/grpc/prometheus_metrics_1:prometheus",
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",
@@ -24,12 +26,14 @@ java_test(
 java_test(
     name = "client_test",
     size = "small",
-    srcs = ["MonitoringClientInterceptorIntegrationTest.java"],
+    srcs = [
+        "MonitoringClientInterceptorIntegrationTest.java",
+        "PrometheusRegistryHelper.java",
+    ],
     test_class = "dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1.MonitoringClientInterceptorIntegrationTest",
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
-        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_prometheus_metrics",
         "//src/main/java/dev/tayvs/grpc/prometheus_metrics_1:prometheus",
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",

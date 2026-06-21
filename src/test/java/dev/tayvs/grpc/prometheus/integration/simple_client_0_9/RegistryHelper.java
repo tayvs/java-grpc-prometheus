@@ -1,4 +1,4 @@
-package dev.tayvs.grpc.prometheus.testing;
+package dev.tayvs.grpc.prometheus.integration.simple_client_0_9;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;

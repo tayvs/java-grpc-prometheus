@@ -3,6 +3,11 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 # gRPC test service implementation only — no prometheus dependency.
+#
+# The version-specific RegistryHelper / PrometheusRegistryHelper utilities used to live here.
+# They have been moved next to the integration tests that use them (one copy per
+# src/test/.../integration/<module> directory), since each is compiled against a different
+# Prometheus client version.
 java_library(
     name = "testing",
     testonly = 1,
@@ -11,42 +16,5 @@ java_library(
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",
         "//third_party/grpc",
-    ],
-)
-
-# RegistryHelper compiled against simpleclient 0.9.0 (used by simple_client_0_9).
-java_library(
-    name = "testing_simple_client_0_9",
-    testonly = 1,
-    srcs = ["RegistryHelper.java"],
-    exports = [
-        "@maven_0_9//:io_prometheus_simpleclient",
-    ],
-    deps = [
-        "@maven_0_9//:io_prometheus_simpleclient",
-    ],
-)
-
-# RegistryHelper compiled against simpleclient 0.16.0 (used by simple_client_0_16).
-java_library(
-    name = "testing_simple_client_0_16",
-    testonly = 1,
-    srcs = ["RegistryHelper.java"],
-    exports = [
-        "@maven_0_16//:io_prometheus_simpleclient",
-    ],
-    deps = [
-        "@maven_0_16//:io_prometheus_simpleclient",
-    ],
-)
-
-# PrometheusRegistryHelper for prometheus-metrics 1.x (used by prometheus_metrics).
-java_library(
-    name = "testing_prometheus_metrics",
-    testonly = 1,
-    srcs = ["PrometheusRegistryHelper.java"],
-    deps = [
-        "@maven_1_x//:io_prometheus_prometheus_metrics_core",
-        "@maven_1_x//:io_prometheus_prometheus_metrics_model",
     ],
 )

@@ -27,9 +27,8 @@ import java.util.List;
 import dev.tayvs.grpc.prometheus.Configuration;
 import dev.tayvs.grpc.prometheus.MonitoringServerInterceptor;
 import dev.tayvs.grpc.prometheus.testing.HelloServiceImpl;
-import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper;
-import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper.FamilySamples;
-import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper.FakeSample;
+import dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1.PrometheusRegistryHelper.FakeSample;
+import dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1.PrometheusRegistryHelper.FamilySamples;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class MonitoringServerInterceptorIntegrationTest {
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).isEmpty();
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).isEmpty();
 
-    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    PrometheusRegistryHelper.FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
     assertThat(handled.samples).hasSize(2);
     FakeSample totalSample = getSample(handled, "grpc_server_handled_total");
     assertThat(totalSample.labelValues)

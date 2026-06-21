@@ -29,7 +29,6 @@ import java.util.List;
 import dev.tayvs.grpc.prometheus.Configuration;
 import dev.tayvs.grpc.prometheus.MonitoringServerInterceptor;
 import dev.tayvs.grpc.prometheus.testing.HelloServiceImpl;
-import dev.tayvs.grpc.prometheus.testing.RegistryHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

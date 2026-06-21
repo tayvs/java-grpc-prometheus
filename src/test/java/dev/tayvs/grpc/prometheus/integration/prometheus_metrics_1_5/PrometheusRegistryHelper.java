@@ -1,4 +1,4 @@
-package dev.tayvs.grpc.prometheus.testing;
+package dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1_5;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import io.prometheus.metrics.model.snapshots.ClassicHistogramBuckets;
@@ -8,7 +8,6 @@ import io.prometheus.metrics.model.snapshots.Label;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

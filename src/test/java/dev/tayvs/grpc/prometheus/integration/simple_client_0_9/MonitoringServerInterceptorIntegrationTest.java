@@ -10,7 +10,6 @@ import dev.tayvs.grpc.prometheus.Configuration;
 import dev.tayvs.grpc.prometheus.MonitoringServerInterceptor;
 import dev.tayvs.grpc.prometheus.Provider;
 import dev.tayvs.grpc.prometheus.testing.HelloServiceImpl;
-import dev.tayvs.grpc.prometheus.testing.RegistryHelper;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.Server;

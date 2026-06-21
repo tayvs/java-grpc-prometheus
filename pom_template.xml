@@ -9,30 +9,30 @@
     <packaging>{type}</packaging>
 
     <organization>
-        <name>dev.tayvs</name>
+        <name>io.github.tayvs</name>
     </organization>
     <name>java-grpc-prometheus</name>
     <description>Java interceptors which can be used to monitor Grpc services using Prometheus.</description>
-    <url>https://github.com/grpc-ecosystem/java-grpc-prometheus</url>
+    <url>https://github.com/tayvs/java-grpc-prometheus</url>
 
     <developers>
         <developer>
-            <id>dino</id>
-            <name>Dino</name>
+            <id>tayvs</id>
+            <name>tayvs</name>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/grpc-ecosystem/java-grpc-prometheus.git</connection>
-        <developerConnection>scm:git:git://github.com/grpc-ecosystem/java-grpc-prometheus.git</developerConnection>
-        <url>https://github.com/grpc-ecosystem/java-grpc-prometheus</url>
+        <connection>scm:git:git://github.com/tayvs/java-grpc-prometheus.git</connection>
+        <developerConnection>scm:git:git://github.com/tayvs/java-grpc-prometheus.git</developerConnection>
+        <url>https://github.com/tayvs/java-grpc-prometheus</url>
         <tag>HEAD</tag>
     </scm>
 
     <licenses>
         <license>
             <name>Apache 2.0 License</name>
-            <url>https://github.com/dinowernli/java-grpc-prometheus/blob/master/LICENSE</url>
+            <url>https://github.com/tayvs/java-grpc-prometheus/blob/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
