@@ -1,0 +1,47 @@
+package dev.tayvs.grpc.prometheus;
+
+import io.grpc.ClientCall;
+import io.grpc.ForwardingClientCall;
+import io.grpc.Metadata;
+import java.time.Clock;
+
+/** A {@link SimpleForwardingClientCall} which increments prometheus counters for the rpc call. */
+class MonitoringClientCall<R, S> extends ForwardingClientCall.SimpleForwardingClientCall<R, S> {
+  private final ClientMetricsI clientMetrics;
+  private final GrpcMethod grpcMethod;
+  private final Configuration configuration;
+  private final Clock clock;
+  private Metadata requestMetadata;
+
+  MonitoringClientCall(
+      ClientCall<R, S> delegate,
+      ClientMetricsI clientMetrics,
+      GrpcMethod grpcMethod,
+      Configuration configuration,
+      Clock clock) {
+    super(delegate);
+    this.clientMetrics = clientMetrics;
+    this.grpcMethod = grpcMethod;
+    this.configuration = configuration;
+    this.clock = clock;
+  }
+
+  @Override
+  public void start(Listener<S> delegate, Metadata metadata) {
+    this.requestMetadata = metadata;
+    clientMetrics.recordCallStarted(metadata);
+    super.start(
+        new MonitoringClientCallListener<>(
+            delegate, clientMetrics, grpcMethod, configuration, clock, metadata),
+        metadata);
+  }
+
+  @Override
+  public void sendMessage(R requestMessage) {
+    if (grpcMethod.streamsRequests()) {
+      clientMetrics.recordStreamMessageSent(
+          requestMetadata == null ? new Metadata() : requestMetadata);
+    }
+    super.sendMessage(requestMessage);
+  }
+}

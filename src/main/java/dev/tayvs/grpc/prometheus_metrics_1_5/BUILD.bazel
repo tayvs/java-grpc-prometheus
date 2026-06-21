@@ -1,0 +1,14 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "prometheus",
+    srcs = glob(["*.java"]),
+    deps = [
+        "//src/main/java/dev/tayvs/grpc/prometheus",
+        "//third_party/grpc",
+        "@maven_1_5//:io_prometheus_prometheus_metrics_core",
+        "@maven_1_5//:io_prometheus_prometheus_metrics_model",
+    ],
+)

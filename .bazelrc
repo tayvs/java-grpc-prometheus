@@ -1,1 +1,24 @@
+# This project uses WORKSPACE-based deps; disable Bzlmod to prevent the
+# Bzlmod-resolved protobuf~ 3.21.7 from shadowing com_google_protobuf 33.4
+# and causing a clearExtension type-erasure name clash in DescriptorProtos.java.
+common --enable_bzlmod=false
+
+# abseil-cpp requires C++17.
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# __is_trivially_relocatable was deprecated in Clang 21; older absl uses it.
+build --cxxopt=-Wno-deprecated-builtins
+build --host_cxxopt=-Wno-deprecated-builtins
+
+# zutil.h defines fdopen=NULL under TARGET_OS_MAC for old CodeWarrior toolchain,
+# breaking macOS system header declarations. Predefine fdopen as itself so the
+# #ifndef fdopen guard is false and the bad macro is never set.
+build --per_file_copt=external/zlib/.*@-Dfdopen=fdopen
+build --host_per_file_copt=external/zlib/.*@-Dfdopen=fdopen
+
 test --test_output=errors
+# Bazel 7's java_stub_template hardcodes -Djava.security.manager=allow, which
+# Java 21+ rejects. Pass disallow via --jvm_flag= wrapper arg so it lands in
+# JVM_FLAGS_CMDLINE (after the hardcoded flag), and last -D wins.
+test --test_arg=--jvm_flag=-Djava.security.manager=disallow
