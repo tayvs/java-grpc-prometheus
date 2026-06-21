@@ -1,6 +1,6 @@
 // Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
 
-package dev.tayvs.grpc.prometheus.integration.simple_client_after_10;
+package dev.tayvs.grpc.prometheus.integration.simple_client_0_16;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -39,7 +39,7 @@ import org.junit.Test;
 /**
  * Integrations tests which make sure that if a service is started with a {@link
  * MonitoringServerInterceptor}, then all Prometheus metrics get recorded correctly. Uses the
- * simple_client_after_10 (simpleclient 0.9.0) implementation.
+ * simple_client_0_16 (simpleclient 0.9.0) implementation.
  */
 public class MonitoringServerInterceptorIntegrationTest {
   private static final String grpcServerName = "grpc-server";

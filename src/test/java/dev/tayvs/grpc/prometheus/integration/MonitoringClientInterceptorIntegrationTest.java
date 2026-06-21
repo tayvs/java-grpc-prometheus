@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Integration tests for the client-side monitoring pipeline using simple_client_after_10
+ * Integration tests for the client-side monitoring pipeline using simple_client_0_16
  * (simpleclient 0.9.0). simpleclient 0.9.0 does not emit _created timestamps and does not append
  * _total to counter sample names, so each counter family has one sample per label combo.
  */

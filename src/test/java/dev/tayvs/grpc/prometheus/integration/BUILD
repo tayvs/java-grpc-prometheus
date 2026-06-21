@@ -1,6 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_test")
 
-# // TODO: Redundant module. Old tests
+# TODO: Redundant module. Old tests. Same as 0_16
 
 java_test(
     name = "server_test",
@@ -10,8 +10,8 @@ java_test(
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
-        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_after_10",
-        "//src/main/java/dev/tayvs/grpc/simple_client_after_10:prometheus",
+        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_0_16",
+        "//src/main/java/dev/tayvs/grpc/simple_client_0_16:prometheus",
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",
         "//third_party/grpc",
@@ -29,8 +29,8 @@ java_test(
     deps = [
         "//src/main/java/dev/tayvs/grpc/prometheus",
         "//src/main/java/dev/tayvs/grpc/prometheus/testing",
-        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_after_10",
-        "//src/main/java/dev/tayvs/grpc/simple_client_after_10:prometheus",
+        "//src/main/java/dev/tayvs/grpc/prometheus/testing:testing_simple_client_0_16",
+        "//src/main/java/dev/tayvs/grpc/simple_client_0_16:prometheus",
         "//src/main/proto:hello_java_proto",
         "//src/main/proto:hello_proto_grpc",
         "//third_party/grpc",

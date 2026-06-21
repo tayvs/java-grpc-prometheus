@@ -14,9 +14,9 @@ java_library(
     ],
 )
 
-# RegistryHelper compiled against simpleclient 0.9.0 (used by simple_client_before_9).
+# RegistryHelper compiled against simpleclient 0.9.0 (used by simple_client_0_9).
 java_library(
-    name = "testing_simple_client_before_9",
+    name = "testing_simple_client_0_9",
     testonly = 1,
     srcs = ["RegistryHelper.java"],
     exports = [
@@ -27,9 +27,9 @@ java_library(
     ],
 )
 
-# RegistryHelper compiled against simpleclient 0.16.0 (used by simple_client_after_10).
+# RegistryHelper compiled against simpleclient 0.16.0 (used by simple_client_0_16).
 java_library(
-    name = "testing_simple_client_after_10",
+    name = "testing_simple_client_0_16",
     testonly = 1,
     srcs = ["RegistryHelper.java"],
     exports = [

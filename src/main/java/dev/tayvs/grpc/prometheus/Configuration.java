@@ -1,5 +1,3 @@
-// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
-
 package dev.tayvs.grpc.prometheus;
 
 import java.util.ArrayList;
@@ -116,12 +114,10 @@ public class Configuration {
 
   private Configuration(
       boolean isIncludeLatencyHistograms,
-      //            REGISTRY collectorRegistry,
       double[] latencyBuckets,
       List<String> labelHeaders,
       boolean isAddCodeLabelToHistograms) {
     this.isIncludeLatencyHistograms = isIncludeLatencyHistograms;
-    //        this.collectorRegistry = collectorRegistry;
     this.latencyBuckets = latencyBuckets;
     this.labelHeaders = labelHeaders;
     this.isAddCodeLabelToHistograms = isAddCodeLabelToHistograms;

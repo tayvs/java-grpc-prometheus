@@ -37,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Integrations tests for the simple_client_after_10 module (simpleclient 0.9.0). simpleclient 0.9.0
+ * Integrations tests for the simple_client_0_16 module (simpleclient 0.9.0). simpleclient 0.9.0
  * does not emit _created timestamps, so each counter family has one sample per label combination
  * (only _total, no _created).
  */

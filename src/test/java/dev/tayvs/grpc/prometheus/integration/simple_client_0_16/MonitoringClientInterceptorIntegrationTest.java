@@ -1,4 +1,4 @@
-package dev.tayvs.grpc.prometheus.integration.simple_client_after_10;
+package dev.tayvs.grpc.prometheus.integration.simple_client_0_16;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Integration tests for the client-side monitoring pipeline. Uses the simple_client_after_10
+ * Integration tests for the client-side monitoring pipeline. Uses the simple_client_0_16
  * (simpleclient 0.9.0) implementation.
  */
 public class MonitoringClientInterceptorIntegrationTest {

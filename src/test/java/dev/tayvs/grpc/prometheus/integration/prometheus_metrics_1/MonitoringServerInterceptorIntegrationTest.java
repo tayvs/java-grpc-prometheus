@@ -1,6 +1,8 @@
 // Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
 
-package dev.tayvs.grpc.prometheus.integration.simple_client_before_9;
+package dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import com.github.dinowernli.proto.grpc.prometheus.HelloProto.HelloRequest;
 import com.github.dinowernli.proto.grpc.prometheus.HelloProto.HelloResponse;
@@ -8,11 +10,7 @@ import com.github.dinowernli.proto.grpc.prometheus.HelloServiceGrpc;
 import com.github.dinowernli.proto.grpc.prometheus.HelloServiceGrpc.HelloServiceBlockingStub;
 import com.github.dinowernli.proto.grpc.prometheus.HelloServiceGrpc.HelloServiceStub;
 import com.google.common.collect.ImmutableList;
-import dev.tayvs.grpc.prometheus.Configuration;
-import dev.tayvs.grpc.prometheus.MonitoringServerInterceptor;
 import dev.tayvs.grpc.prometheus.Provider;
-import dev.tayvs.grpc.prometheus.testing.HelloServiceImpl;
-import dev.tayvs.grpc.prometheus.testing.RegistryHelper;
 import io.grpc.Channel;
 import io.grpc.Metadata;
 import io.grpc.Server;
@@ -22,23 +20,29 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.StreamRecorder;
-import io.prometheus.client.Collector.MetricFamilySamples;
-import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.CollectorRegistry;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.common.truth.Truth.assertThat;
+import dev.tayvs.grpc.prometheus.Configuration;
+import dev.tayvs.grpc.prometheus.MonitoringServerInterceptor;
+import dev.tayvs.grpc.prometheus.testing.HelloServiceImpl;
+import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper;
+import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper.FamilySamples;
+import dev.tayvs.grpc.prometheus.testing.PrometheusRegistryHelper.FakeSample;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Integrations tests for the simple_client_after_10 module (simpleclient 0.9.0). In simpleclient
- * 0.9.0: counters have no _total suffix and no _created samples. Each counter family has one sample
- * per label combination.
+ * Integrations tests which make sure that if a service is started with a {@link
+ * MonitoringServerInterceptor}, then all Prometheus metrics get recorded correctly. Uses the
+ * prometheus_metrics (prometheus-metrics-core 1.x) implementation.
+ *
+ * <p>Note: the prometheus-metrics 1.x builder has no namespace/subsystem helpers, so the full
+ * grpc_server_ prefix is baked into each metric name (e.g. grpc_server_started).
  */
 public class MonitoringServerInterceptorIntegrationTest {
   private static final String grpcServerName = "grpc-server";
@@ -49,12 +53,12 @@ public class MonitoringServerInterceptorIntegrationTest {
   private static final Configuration CHEAP_METRICS = Configuration.cheapMetricsOnly();
   private static final Configuration ALL_METRICS = Configuration.allMetrics();
 
-  private CollectorRegistry collectorRegistry;
+  private PrometheusRegistry prometheusRegistry;
   private Server grpcServer;
 
   @Before
   public void setUp() {
-    collectorRegistry = new CollectorRegistry();
+    prometheusRegistry = new PrometheusRegistry();
   }
 
   @After
@@ -67,23 +71,24 @@ public class MonitoringServerInterceptorIntegrationTest {
     startGrpcServer(CHEAP_METRICS);
     createGrpcBlockingStub().sayHello(REQUEST);
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started"))
-        .contains("grpc_server_started");
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_created");
 
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).isEmpty();
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).isEmpty();
 
-    MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
-    assertThat(handled.samples).hasSize(1);
-    Sample totalSample = getSample(handled, "grpc_server_handled");
+    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    assertThat(handled.samples).hasSize(2);
+    FakeSample totalSample = getSample(handled, "grpc_server_handled_total");
     assertThat(totalSample.labelValues)
         .containsExactly(
             "UNARY",
             HelloServiceImpl.SERVICE_NAME,
             HelloServiceImpl.UNARY_METHOD_NAME,
             "OK",
-            "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+            "OK"); // TODO: These are the "code" and "grpc_code" labels which are currently
+    // duplicated. "code" should be deprecated in a future release.
     assertThat(totalSample.value).isWithin(0).of(1);
   }
 
@@ -100,26 +105,27 @@ public class MonitoringServerInterceptorIntegrationTest {
     // Not a blocking stub, so we need to wait.
     streamRecorder.awaitCompletion();
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started"))
-        .contains("grpc_server_started");
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_created");
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received"))
-        .contains("grpc_server_msg_received");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_created");
 
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).isEmpty();
 
-    MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
-    assertThat(handled.samples).hasSize(1);
-    Sample totalSample = getSample(handled, "grpc_server_handled");
+    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    assertThat(handled.samples).hasSize(2);
+    FakeSample totalSample = getSample(handled, "grpc_server_handled_total");
     assertThat(totalSample.labelValues)
         .containsExactly(
             "CLIENT_STREAMING",
             HelloServiceImpl.SERVICE_NAME,
             HelloServiceImpl.CLIENT_STREAM_METHOD_NAME,
-            "OK",
-            "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+            "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+            // duplicated. "code" should be deprecated in a future release.
+            "OK");
     assertThat(totalSample.value).isWithin(0).of(1);
   }
 
@@ -129,30 +135,31 @@ public class MonitoringServerInterceptorIntegrationTest {
     ImmutableList<HelloResponse> responses =
         ImmutableList.copyOf(createGrpcBlockingStub().sayHelloServerStream(REQUEST));
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started"))
-        .contains("grpc_server_started");
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_created");
 
     assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).isEmpty();
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent"))
-        .contains("grpc_server_msg_sent");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_created");
 
-    MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
-    assertThat(handled.samples).hasSize(1);
-    Sample totalSample = getSample(handled, "grpc_server_handled");
+    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    assertThat(handled.samples).hasSize(2);
+    FakeSample totalSample = getSample(handled, "grpc_server_handled_total");
     assertThat(totalSample.labelValues)
         .containsExactly(
             "SERVER_STREAMING",
             HelloServiceImpl.SERVICE_NAME,
             HelloServiceImpl.SERVER_STREAM_METHOD_NAME,
-            "OK",
-            "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+            "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+            // duplicated. "code" should be deprecated in a future release.
+            "OK");
     assertThat(totalSample.value).isWithin(0).of(1);
 
-    MetricFamilySamples messagesSent = findRecordedMetricOrThrow("grpc_server_msg_sent");
-    totalSample = getSample(messagesSent, "grpc_server_msg_sent");
+    FamilySamples messagesSent = findRecordedMetricOrThrow("grpc_server_msg_sent");
+    totalSample = getSample(messagesSent, "grpc_server_msg_sent_total");
     assertThat(totalSample.labelValues)
         .containsExactly(
             "SERVER_STREAMING",
@@ -174,28 +181,29 @@ public class MonitoringServerInterceptorIntegrationTest {
     // Not a blocking stub, so we need to wait.
     streamRecorder.awaitCompletion();
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started"))
-        .contains("grpc_server_started");
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_created");
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received"))
-        .contains("grpc_server_msg_received");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_created");
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent"))
-        .contains("grpc_server_msg_sent");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_created");
 
-    MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
-    assertThat(handled.samples).hasSize(1);
-    Sample totalSample = getSample(handled, "grpc_server_handled");
+    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    assertThat(handled.samples).hasSize(2);
+    FakeSample totalSample = getSample(handled, "grpc_server_handled_total");
     assertThat(totalSample.labelValues)
         .containsExactly(
             "BIDI_STREAMING",
             HelloServiceImpl.SERVICE_NAME,
             HelloServiceImpl.BIDI_STREAM_METHOD_NAME,
-            "OK",
-            "OK"); // TODO: "code" and "grpc_code" are duplicated; "code" should be deprecated.
+            "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+            // duplicated. "code" should be deprecated in a future release.
+            "OK");
     assertThat(totalSample.value).isWithin(0).of(1);
   }
 
@@ -204,8 +212,8 @@ public class MonitoringServerInterceptorIntegrationTest {
     startGrpcServer(CHEAP_METRICS);
     createGrpcBlockingStub().sayHello(REQUEST);
     assertThat(
-            RegistryHelper.findRecordedMetric(
-                    "grpc_server_handled_latency_seconds", collectorRegistry)
+            PrometheusRegistryHelper.findRecordedMetric(
+                    "grpc_server_handled_latency_seconds", prometheusRegistry)
                 .isPresent())
         .isFalse();
   }
@@ -215,7 +223,7 @@ public class MonitoringServerInterceptorIntegrationTest {
     startGrpcServer(ALL_METRICS);
     createGrpcBlockingStub().sayHello(REQUEST);
 
-    MetricFamilySamples latency = findRecordedMetricOrThrow("grpc_server_handled_latency_seconds");
+    FamilySamples latency = findRecordedMetricOrThrow("grpc_server_handled_latency_seconds");
     assertThat(latency.samples.size()).isGreaterThan(0);
   }
 
@@ -225,17 +233,13 @@ public class MonitoringServerInterceptorIntegrationTest {
     startGrpcServer(ALL_METRICS.withLatencyBuckets(buckets));
     createGrpcBlockingStub().sayHello(REQUEST);
 
-    long expectedNum = buckets.length + 1; // Our buckets plus the +Inf bucket.
-    assertThat(
-            countSamples(
-                "grpc_server_handled_latency_seconds",
-                "grpc_server_handled_latency_seconds_bucket"))
+    long expectedNum = buckets.length + 1; // Our two buckets and the Inf buckets.
+    assertThat(countSamples("grpc_server_handled_latency_seconds", "grpc_server_handled_latency_seconds_bucket"))
         .isEqualTo(expectedNum);
 
-    Sample sample =
+    FakeSample sample =
         getSample(
-            findRecordedMetricOrThrow("grpc_server_handled_latency_seconds"),
-            "grpc_server_handled_latency_seconds_bucket");
+            findRecordedMetricOrThrow("grpc_server_handled_latency_seconds"), "grpc_server_handled_latency_seconds_bucket");
 
     assertThat(sample.labelNames).containsExactly("grpc_type", "grpc_service", "grpc_method", "le");
   }
@@ -246,10 +250,9 @@ public class MonitoringServerInterceptorIntegrationTest {
     startGrpcServer(ALL_METRICS.withCodeLabelInLatencyHistogram().withLatencyBuckets(buckets));
     createGrpcBlockingStub().sayHello(REQUEST);
 
-    Sample sample =
+    FakeSample sample =
         getSample(
-            findRecordedMetricOrThrow("grpc_server_handled_latency_seconds"),
-            "grpc_server_handled_latency_seconds_bucket");
+            findRecordedMetricOrThrow("grpc_server_handled_latency_seconds"), "grpc_server_handled_latency_seconds_bucket");
 
     assertThat(sample.labelNames)
         .containsExactly("grpc_type", "grpc_service", "grpc_method", "grpc_code", "le");
@@ -278,9 +281,8 @@ public class MonitoringServerInterceptorIntegrationTest {
     requestStream.onCompleted();
     streamRecorder.awaitCompletion();
 
-    // 2 label combinations (UNARY and BIDI_STREAMING), 1 sample each in 0.9.0.
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
-    assertThat(findRecordedMetricOrThrow("grpc_server_handled").samples).hasSize(2);
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(4);
+    assertThat(findRecordedMetricOrThrow("grpc_server_handled").samples).hasSize(4);
   }
 
   @Test
@@ -301,11 +303,10 @@ public class MonitoringServerInterceptorIntegrationTest {
     // Not a blocking stub, so we need to wait.
     streamRecorder.awaitCompletion();
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started"))
-        .contains("grpc_server_started");
-    Sample sample =
-        getSample(findRecordedMetricOrThrow("grpc_server_started"), "grpc_server_started");
+    assertThat(findRecordedMetricOrThrow("grpc_server_started").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_started")).contains("grpc_server_started_created");
+    FakeSample sample = getSample(findRecordedMetricOrThrow("grpc_server_started"), "grpc_server_started_total");
     assertThat(sample.labelNames)
         .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
     assertThat(sample.labelValues)
@@ -316,12 +317,10 @@ public class MonitoringServerInterceptorIntegrationTest {
             "value1",
             "value2");
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received"))
-        .contains("grpc_server_msg_received");
-    sample =
-        getSample(
-            findRecordedMetricOrThrow("grpc_server_msg_received"), "grpc_server_msg_received");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_received").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_received")).contains("grpc_server_msg_received_created");
+    sample = getSample(findRecordedMetricOrThrow("grpc_server_msg_received"), "grpc_server_msg_received_total");
     assertThat(sample.labelNames)
         .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
     assertThat(sample.labelValues)
@@ -332,10 +331,10 @@ public class MonitoringServerInterceptorIntegrationTest {
             "value1",
             "value2");
 
-    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(1);
-    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent"))
-        .contains("grpc_server_msg_sent");
-    sample = getSample(findRecordedMetricOrThrow("grpc_server_msg_sent"), "grpc_server_msg_sent");
+    assertThat(findRecordedMetricOrThrow("grpc_server_msg_sent").samples).hasSize(2);
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_total");
+    assertThat(findRecordedMetricNamesOrThrow("grpc_server_msg_sent")).contains("grpc_server_msg_sent_created");
+    sample = getSample(findRecordedMetricOrThrow("grpc_server_msg_sent"), "grpc_server_msg_sent_total");
     assertThat(sample.labelNames)
         .containsExactly("grpc_type", "grpc_service", "grpc_method", "header_1", "header_2");
     assertThat(sample.labelValues)
@@ -346,9 +345,9 @@ public class MonitoringServerInterceptorIntegrationTest {
             "value1",
             "value2");
 
-    MetricFamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
-    assertThat(handled.samples).hasSize(1);
-    sample = getSample(handled, "grpc_server_handled");
+    FamilySamples handled = findRecordedMetricOrThrow("grpc_server_handled");
+    assertThat(handled.samples).hasSize(2);
+    sample = getSample(handled, "grpc_server_handled_total");
     assertThat(sample.labelNames)
         .containsExactly(
             "grpc_type",
@@ -363,7 +362,8 @@ public class MonitoringServerInterceptorIntegrationTest {
             "BIDI_STREAMING",
             HelloServiceImpl.SERVICE_NAME,
             HelloServiceImpl.BIDI_STREAM_METHOD_NAME,
-            "OK",
+            "OK", // TODO: These are the "code" and "grpc_code" labels which are currently
+            // duplicated. "code" should be deprecated in a future release.
             "OK",
             "value1",
             "value2");
@@ -372,7 +372,7 @@ public class MonitoringServerInterceptorIntegrationTest {
 
   private void startGrpcServer(Configuration monitoringConfig) {
     MonitoringServerInterceptor interceptor =
-        MonitoringServerInterceptor.create(new Provider(monitoringConfig, collectorRegistry));
+        MonitoringServerInterceptor.create(new Provider(monitoringConfig, prometheusRegistry));
     grpcServer =
         InProcessServerBuilder.forName(grpcServerName)
             .addService(
@@ -385,12 +385,12 @@ public class MonitoringServerInterceptorIntegrationTest {
     }
   }
 
-  private MetricFamilySamples findRecordedMetricOrThrow(String name) {
-    return RegistryHelper.findRecordedMetricOrThrow(name, collectorRegistry);
+  private FamilySamples findRecordedMetricOrThrow(String name) {
+    return PrometheusRegistryHelper.findRecordedMetricOrThrow(name, prometheusRegistry);
   }
 
   private List<String> findRecordedMetricNamesOrThrow(String name) {
-    return RegistryHelper.findRecordedMetricNamesOrThrow(name, collectorRegistry);
+    return PrometheusRegistryHelper.findRecordedMetricNamesOrThrow(name, prometheusRegistry);
   }
 
   private HelloServiceBlockingStub createGrpcBlockingStub() {
@@ -398,7 +398,7 @@ public class MonitoringServerInterceptorIntegrationTest {
   }
 
   private int countSamples(String metricName, String sampleName) {
-    return RegistryHelper.countSamples(metricName, sampleName, collectorRegistry);
+    return PrometheusRegistryHelper.countSamples(metricName, sampleName, prometheusRegistry);
   }
 
   private HelloServiceStub createGrpcStub() {
@@ -409,7 +409,7 @@ public class MonitoringServerInterceptorIntegrationTest {
     return InProcessChannelBuilder.forName(grpcServerName).usePlaintext().build();
   }
 
-  private static Sample getSample(MetricFamilySamples family, String sampleName) {
+  private static FakeSample getSample(FamilySamples family, String sampleName) {
     return family.samples.stream().filter(s -> s.name.equals(sampleName)).findFirst().get();
   }
 }
