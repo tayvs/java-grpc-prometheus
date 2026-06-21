@@ -46,7 +46,7 @@ java_library(
     testonly = 1,
     srcs = ["PrometheusRegistryHelper.java"],
     deps = [
-        "@maven_1_0//:io_prometheus_prometheus_metrics_core",
-        "@maven_1_0//:io_prometheus_prometheus_metrics_model",
+        "@maven_1_x//:io_prometheus_prometheus_metrics_core",
+        "@maven_1_x//:io_prometheus_prometheus_metrics_model",
     ],
 )

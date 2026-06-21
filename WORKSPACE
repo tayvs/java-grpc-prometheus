@@ -36,7 +36,11 @@ SIMPLE_CLIENT_0_16 = [
     "io.prometheus:simpleclient:0.16.0",
 ]
 
-PROMETHEUS_CLIENT = [
+PROMETHEUS_CLIENT_1_5 = [
+    "io.prometheus:prometheus-metrics-core:1.5.0",
+]
+
+PROMETHEUS_CLIENT_1_x = [
     "io.prometheus:prometheus-metrics-core:1.8.0",
 ]
 
@@ -82,8 +86,18 @@ maven_install(
 )
 
 maven_install(
-    name = "maven_1_0",
-    artifacts = PROMETHEUS_CLIENT,
+    name = "maven_1_5",
+    artifacts = PROMETHEUS_CLIENT_1_5,
+    fetch_sources = True,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+
+maven_install(
+    name = "maven_1_x",
+    artifacts = PROMETHEUS_CLIENT_1_x,
     fetch_sources = True,
     repositories = [
         "https://maven.google.com",

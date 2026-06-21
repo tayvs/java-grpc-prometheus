@@ -1,5 +1,3 @@
-// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
-
 package dev.tayvs.grpc.prometheus.integration.simple_client_0_16;
 
 import static com.google.common.truth.Truth.assertThat;

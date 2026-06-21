@@ -1,5 +1,3 @@
-// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
-
 package dev.tayvs.grpc.prometheus.testing;
 
 import com.github.dinowernli.proto.grpc.prometheus.HelloProto.HelloRequest;

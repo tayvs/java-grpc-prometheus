@@ -1,5 +1,3 @@
-// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
-
 package dev.tayvs.grpc.prometheus.integration.simple_client_0_9;
 
 import com.github.dinowernli.proto.grpc.prometheus.HelloProto.HelloRequest;

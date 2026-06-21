@@ -1,5 +1,3 @@
-// Copyright 2016 Dino Wernli. All Rights Reserved. See LICENSE for licensing terms.
-
 package dev.tayvs.grpc.prometheus;
 
 import io.grpc.Metadata;
@@ -15,11 +13,11 @@ public class MonitoringServerInterceptor implements ServerInterceptor {
   private final Configuration configuration;
   private final ServerMetricsI.FactoryI serverMetricsFactory;
 
-  public static MonitoringServerInterceptor create(ProviderI provider) {
+  public static MonitoringServerInterceptor create(ProviderI<?> provider) {
     return new MonitoringServerInterceptor(Clock.systemDefaultZone(), provider);
   }
 
-  private MonitoringServerInterceptor(Clock clock, ProviderI providerI) {
+  private MonitoringServerInterceptor(Clock clock, ProviderI<?> providerI) {
     this.clock = clock;
     this.configuration = providerI.getConfig();
     this.serverMetricsFactory = providerI.serverMetricsFactory();
@@ -32,7 +30,7 @@ public class MonitoringServerInterceptor implements ServerInterceptor {
     GrpcMethod grpcMethod = GrpcMethod.of(methodDescriptor);
     ServerMetricsI metrics = serverMetricsFactory.createMetricsForMethod(grpcMethod);
     ServerCall<R, S> monitoringCall =
-        new MonitoringServerCall(call, clock, grpcMethod, metrics, configuration, requestMetadata);
+        new MonitoringServerCall<>(call, clock, grpcMethod, metrics, configuration, requestMetadata);
     return new MonitoringServerCallListener<>(
         next.startCall(monitoringCall, requestMetadata), metrics, grpcMethod, requestMetadata);
   }

@@ -1,4 +1,4 @@
-package dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1;
+package dev.tayvs.grpc.prometheus.integration.prometheus_metrics_1_5;
 
 import static com.google.common.truth.Truth.assertThat;
 
